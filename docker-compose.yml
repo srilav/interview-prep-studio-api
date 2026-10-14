@@ -1,0 +1,44 @@
+# Local infrastructure. Run the API itself with ./mvnw -pl app spring-boot:run (see README).
+services:
+  postgres:
+    image: postgres:16.4
+    environment:
+      POSTGRES_DB: prepstudio
+      POSTGRES_USER: prepstudio
+      POSTGRES_PASSWORD: prepstudio
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prepstudio"]
+      interval: 5s
+      retries: 10
+
+  # gRPC-Web → gRPC for the browser. Listens on 8081, forwards to the API's gRPC port 9090 on the host.
+  envoy:
+    image: envoyproxy/envoy:v1.31.2
+    command: ["envoy", "-c", "/etc/envoy/envoy.yaml", "--log-level", "warn"]
+    volumes:
+      - ./infra/envoy/envoy.yaml:/etc/envoy/envoy.yaml:ro
+    ports:
+      - "8081:8081"
+      - "9901:9901"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Kafka-compatible broker for domain events. Start the API with KAFKA_ENABLED=true to relay the outbox here.
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.2.7
+    command:
+      - redpanda start
+      - --mode dev-container
+      - --smp 1
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+    ports:
+      - "19092:19092"
+    profiles: ["kafka"]
+
+volumes:
+  pgdata:

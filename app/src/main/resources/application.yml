@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: prep-studio-api
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/prepstudio}
+    username: ${DATABASE_USER:prepstudio}
+    password: ${DATABASE_PASSWORD:prepstudio}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none          # Flyway owns the schema
+  flyway:
+    enabled: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
+    producer:
+      properties:
+        max.block.ms: 5000
+
+server:
+  port: ${HTTP_PORT:8080}     # WebSocket (STOMP) endpoint: /ws
+
+grpc:
+  server:
+    port: ${GRPC_PORT:9090}   # browsers reach this through Envoy (gRPC-Web) on 8081
+
+prepstudio:
+  llm:
+    provider: ${LLM_PROVIDER:claude}   # claude | fake
+    model: ${LLM_MODEL:claude-haiku-5-5}
+  events:
+    kafka-enabled: ${KAFKA_ENABLED:false}
+    relay-interval-ms: 500
+  discussion:
+    tutor-requests-per-minute: 5
+  web:
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:5173}

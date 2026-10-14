@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package prepstudio.learning.v1;
+
+import "prepstudio/catalog/v1/catalog.proto";
+
+option java_multiple_files = true;
+option java_package = "dev.prepstudio.api.learning.v1";
+
+service LearningService {
+  // Returns the stored explanation, or generates one with the LLM and streams it.
+  rpc StreamExplanation(StreamExplanationRequest) returns (stream ExplanationChunk);
+}
+
+message StreamExplanationRequest {
+  string key_id = 1;
+  prepstudio.catalog.v1.Difficulty level = 2;
+  bool regenerate = 3;
+  string requested_by = 4; // learner display name until auth is added
+}
+
+message ExplanationChunk {
+  oneof payload {
+    string markdown_delta = 1;
+    Explanation completed = 2;
+    string error = 3;
+  }
+}
+
+message Explanation {
+  string id = 1;
+  string key_id = 2;
+  prepstudio.catalog.v1.Difficulty level = 3;
+  string markdown = 4;
+  int32 version = 5;
+}

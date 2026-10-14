@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package prepstudio.progress.v1;
+
+option java_multiple_files = true;
+option java_package = "dev.prepstudio.api.progress.v1";
+
+// Read model built from domain events published by the other contexts.
+service ProgressService {
+  rpc GetSummary(GetSummaryRequest) returns (ProgressSummary);
+}
+
+message GetSummaryRequest {
+  string learner = 1;
+}
+
+message ProgressSummary {
+  string learner = 1;
+  int32 explanations_viewed = 2;
+  int32 messages_posted = 3;
+  repeated RecentActivity recent = 4;
+}
+
+message RecentActivity {
+  string key_id = 1;
+  string type = 2;        // EXPLANATION_VIEWED, MESSAGE_POSTED
+  string occurred_at = 3; // ISO-8601
+}
