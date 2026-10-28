@@ -1,0 +1,29 @@
+# Runs every acceptance-criterion test in docs/SPECS.md (interview-prep-studio) that lives in this repo.
+# A pull request can merge only when this passes (enable "Require status checks" on main).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      # Unit and integration tests: H2 in PostgreSQL mode, in-process gRPC, fake LLM. No secrets needed.
+      - name: Build and test
+        run: mvn -B -ntp verify
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: "**/target/surefire-reports/"

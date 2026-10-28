@@ -1,0 +1,4 @@
+# Every change needs a review from the owner. Migrations change shared data, proto changes the contract.
+*                                   @srilav
+/proto/                             @srilav
+/app/src/main/resources/db/migration/ @srilav
